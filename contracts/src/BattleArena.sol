@@ -3,11 +3,12 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract BattleArena is ERC721, ERC721URIStorage, Ownable(msg.sender) {
+contract BattleArena is ERC721, ERC721URIStorage, ERC721Enumerable, Ownable(msg.sender) {
     uint256 private _tokenIdCounter;
 
     struct ScoreEntry {
@@ -36,12 +37,20 @@ contract BattleArena is ERC721, ERC721URIStorage, Ownable(msg.sender) {
         _tokenIdCounter++;
         _safeMint(msg.sender, tokenId);
 
-        // Set token URI (simple metadata)
+        // Enhanced metadata with dynamic image and rarity
+        string memory rarity = score >= 1000 ? "Legendary" : score >= 500 ? "Epic" : score >= 200 ? "Rare" : "Common";
+        string memory imageUrl = string(abi.encodePacked(
+            "https://api.example.com/generate-nft?score=", Strings.toString(score),
+            "&rarity=", rarity,
+            "&player=", Strings.toHexString(uint160(msg.sender), 20)
+        ));
         string memory metadata = string(abi.encodePacked(
             '{"name": "BattleArena Score #', Strings.toString(tokenId),
-            '", "description": "Score NFT for BattleArena game", "attributes": [',
+            '", "description": "Score NFT for BattleArena game on Somnia Testnet", "image": "', imageUrl,
+            '", "attributes": [',
             '{"trait_type": "Player", "value": "', Strings.toHexString(uint160(msg.sender), 20), '"},',
             '{"trait_type": "Score", "value": "', Strings.toString(score), '"},',
+            '{"trait_type": "Rarity", "value": "', rarity, '"},',
             '{"trait_type": "Timestamp", "value": "', Strings.toString(block.timestamp), '"}',
             ']}'
         ));
@@ -81,12 +90,49 @@ contract BattleArena is ERC721, ERC721URIStorage, Ownable(msg.sender) {
         return leaderboard.length;
     }
 
+    function claimReward() public {
+        require(leaderboard.length > 0, "No scores yet");
+        require(msg.sender == leaderboard[0].player, "Only top player can claim reward");
+        require(block.timestamp > leaderboard[0].timestamp + 7 days, "Wait 7 days after setting record");
+
+        // Mint special reward NFT (simplified - in reality, you'd have a separate contract)
+        uint256 tokenId = _tokenIdCounter;
+        _tokenIdCounter++;
+        _safeMint(msg.sender, tokenId);
+
+        string memory metadata = string(abi.encodePacked(
+            '{"name": "BattleArena Champion #', Strings.toString(tokenId),
+            '", "description": "Champion reward for BattleArena", "attributes": [',
+            '{"trait_type": "Type", "value": "Champion"},',
+            '{"trait_type": "Score", "value": "', Strings.toString(leaderboard[0].score), '"}',
+            ']}'
+        ));
+        _setTokenURI(tokenId, string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(metadata)))));
+    }
+
+    function getUserTokens(address user) public view returns (uint256[] memory) {
+        uint256 balance = balanceOf(user);
+        uint256[] memory tokens = new uint256[](balance);
+        for (uint256 i = 0; i < balance; i++) {
+            tokens[i] = tokenOfOwnerByIndex(user, i);
+        }
+        return tokens;
+    }
+
     // Override functions
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
+    function _increaseBalance(address account, uint128 value) internal override(ERC721, ERC721Enumerable) {
+        super._increaseBalance(account, value);
+    }
+
+    function _update(address to, uint256 tokenId, address auth) internal override(ERC721, ERC721Enumerable) returns (address) {
+        return super._update(to, tokenId, auth);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
