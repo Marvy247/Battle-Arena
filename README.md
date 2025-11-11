@@ -80,7 +80,7 @@ graph TB
     Contract --> SomniaTestnet[⛓️ Somnia Testnet<br/>EVM Compatible<br/>High TPS Blockchain]
 
     %% Data Flow
-    Contract -.-> Events[📡 Event Emissions<br/>ScoreSubmitted,<br/>Transfer (NFT)]
+    Contract -.-> Events[📡 Event Emissions<br/>ScoreSubmitted & Transfer]
     Events -.-> SDS
 
     %% Styling
