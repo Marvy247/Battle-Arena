@@ -55,39 +55,39 @@ const subscription = await sdsClient.subscribe({
 ```mermaid
 graph TB
     %% User Layer
-    User[ Player/Spectator] --> UI[🎮 User Interface]
+    User[Player/Spectator] --> UI[User Interface]
 
     %% Frontend Layer
-    UI --> NextJS[ Next.js 14<br/>React Application]
-    NextJS --> PhaserJS[ Phaser.js<br/>Game Engine]
-    NextJS --> Components[📱 React Components<br/>Leaderboard, Achievements,<br/>SpectatorMode]
+    UI --> NextJS[Next.js 14<br/>React Application]
+    NextJS --> PhaserJS[Phaser.js<br/>Game Engine]
+    NextJS --> Components[React Components<br/>Leaderboard, Achievements,<br/>SpectatorMode]
 
     %% Web3 Layer
-    NextJS --> Wagmi[ Wagmi<br/>Wallet Connection]
-    Wagmi --> Viem[⚡ Viem<br/>Blockchain Interactions]
+    NextJS --> Wagmi[Wagmi<br/>Wallet Connection]
+    Wagmi --> Viem[Viem<br/>Blockchain Interactions]
 
     %% Data Streaming Layer
-    NextJS --> SDS[🌊 Somnia Data Streams<br/>Real-time Subscriptions]
-    SDS --> Stream1[📊 Leaderboard Events<br/>Score Updates]
-    SDS --> Stream2[🏆 Achievement Events<br/>Global Stats]
-    SDS --> Stream3[🎮 Game State Streams<br/>Live Spectating]
+    NextJS --> SDS[Somnia Data Streams<br/>Real-time Subscriptions]
+    SDS --> Stream1[Leaderboard Events<br/>Score Updates]
+    SDS --> Stream2[Achievement Events<br/>Global Stats]
+    SDS --> Stream3[Game State Streams<br/>Live Spectating]
 
     %% Smart Contract Layer
-    Viem --> Contract[📋 BattleArena Contract<br/>ERC721 NFT Minting]
+    Viem --> Contract[BattleArena Contract<br/>ERC721 NFT Minting]
     SDS --> Contract
 
     %% Blockchain Layer
-    Contract --> SomniaTestnet[⛓️ Somnia Testnet<br/>EVM Compatible<br/>High TPS Blockchain]
+    Contract --> SomniaTestnet[Somnia Testnet<br/>EVM Compatible<br/>High TPS Blockchain]
 
     %% Data Flow
-    Contract -.-> Events[📡 Event Emissions<br/>ScoreSubmitted & Transfer]
+    Contract -.-> Events[Event Emissions<br/>ScoreSubmitted & Transfer]
     Events -.-> SDS
 
     %% Styling
-    NextJS --> Tailwind[💅 Tailwind CSS<br/>shadcn/ui Components]
+    NextJS --> Tailwind[Tailwind CSS<br/>shadcn/ui Components]
 
     %% External Services
-    SDS -.-> PublicClient[🌐 Public RPC Client<br/>https://dream-rpc.somnia.network]
+    SDS -.-> PublicClient[Public RPC Client<br/>https://dream-rpc.somnia.network]
 
     classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000000
     classDef web3 fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000000
