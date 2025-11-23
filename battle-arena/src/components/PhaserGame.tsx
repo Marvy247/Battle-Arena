@@ -7,6 +7,14 @@ interface GameProps {
   onGameOver: (score: number) => void
 }
 
+interface GameStats {
+  score: number
+  wavesSurvived: number
+  accuracy: number
+  bestCombo: number
+  asteroidsDestroyed: number
+}
+
 export default function PhaserGame({ onGameOver }: GameProps) {
   const gameRef = useRef<HTMLDivElement>(null)
   const [game, setGame] = useState<Phaser.Game | null>(null)
@@ -18,16 +26,56 @@ export default function PhaserGame({ onGameOver }: GameProps) {
       private player!: Phaser.Physics.Arcade.Sprite
       private asteroids!: Phaser.Physics.Arcade.Group
       private bullets!: Phaser.Physics.Arcade.Group
+      private powerUps!: Phaser.Physics.Arcade.Group
+      
+      // Score & Stats
       private score = 0
       private scoreText!: Phaser.GameObjects.Text
+      private combo = 0
+      private comboText!: Phaser.GameObjects.Text
+      private comboTimer?: Phaser.Time.TimerEvent
+      private scoreMultiplier = 1
+      private lastKillTime = 0
+      private bestCombo = 0
+      
+      // Wave System
+      private wave = 1
+      private waveText!: Phaser.GameObjects.Text
+      private asteroidsInWave = 0
+      private asteroidsDestroyed = 0
+      private totalAsteroidsDestroyed = 0
+      
+      // Health & Shield
       private health = 100
+      private maxHealth = 100
       private healthBar!: Phaser.GameObjects.Graphics
+      private shield = 0
+      private shieldBar!: Phaser.GameObjects.Graphics
+      
+      // Power-ups
+      private rapidFire = false
+      private rapidFireEndTime = 0
+      private speedBoost = false
+      private speedBoostEndTime = 0
+      private scoreBoostActive = false
+      private scoreBoostEndTime = 0
+      private powerUpText!: Phaser.GameObjects.Text
+      
+      // Controls
       private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
       private spaceKey!: Phaser.Input.Keyboard.Key
       private escKey!: Phaser.Input.Keyboard.Key
       private lastFired = 0
+      
+      // Game State
       private isPaused = false
       private pauseMenu!: Phaser.GameObjects.Container
+      private showTutorial = true
+      private tutorialContainer!: Phaser.GameObjects.Container
+      
+      // Accuracy tracking
+      private shotsFired = 0
+      private shotsHit = 0
 
       preload() {
         // Create simple SVG graphics as base64

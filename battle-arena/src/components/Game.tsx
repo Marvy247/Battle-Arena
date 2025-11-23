@@ -2,12 +2,20 @@
 
 import dynamic from 'next/dynamic'
 
-const PhaserGame = dynamic(() => import('./PhaserGame'), { ssr: false })
+const PhaserGameImproved = dynamic(() => import('./PhaserGameImproved'), { ssr: false })
+
+interface GameStats {
+  score: number
+  wavesSurvived: number
+  accuracy: number
+  bestCombo: number
+  asteroidsDestroyed: number
+}
 
 interface GameProps {
-  onGameOver: (score: number) => void
+  onGameOver: (score: number, stats: GameStats) => void
 }
 
 export default function Game({ onGameOver }: GameProps) {
-  return <PhaserGame onGameOver={onGameOver} />
+  return <PhaserGameImproved onGameOver={onGameOver} />
 }

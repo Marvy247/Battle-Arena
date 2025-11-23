@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useReadContract } from 'wagmi'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { BattleArenaABI, CONTRACT_ADDRESS } from '../contracts/BattleArenaABI'
 import { sdsClient } from '../lib/somnia'
+import { keccak256, toHex } from 'viem'
 
 interface ScoreEntry {
   player: string
@@ -14,9 +15,21 @@ interface ScoreEntry {
   timestamp: bigint
 }
 
+interface ScoreNotification {
+  player: string
+  score: number
+  tokenId: number
+  id: string
+}
+
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([])
-  const [newScoreNotification, setNewScoreNotification] = useState<string | null>(null)
+  const [notifications, setNotifications] = useState<ScoreNotification[]>([])
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error' | 'polling'>('connecting')
+  const [updateCount, setUpdateCount] = useState(0)
+  const [sdsLatency, setSdsLatency] = useState<number | null>(null)
+  const lastUpdateTime = useRef<number>(Date.now())
+  
   const { data, refetch } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: BattleArenaABI,
@@ -29,39 +42,73 @@ export default function Leaderboard() {
     }
   }, [data])
 
-  // Initialize SDS for real-time updates
+  // Initialize SDS for real-time updates with ScoreSubmitted event
   useEffect(() => {
     const subscribeToEvents = async () => {
       try {
+        // Calculate ScoreSubmitted event topic: keccak256("ScoreSubmitted(address,uint256,uint256,uint256)")
+        const scoreSubmittedTopic = keccak256(toHex('ScoreSubmitted(address,uint256,uint256,uint256)'))
+        
         const subscription = await sdsClient.subscribe({
           eventContractSources: [CONTRACT_ADDRESS],
-          topicOverrides: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'], // Transfer event for NFT mint (triggers on score submit)
+          topicOverrides: [scoreSubmittedTopic], // ScoreSubmitted event
           ethCalls: [{
             to: CONTRACT_ADDRESS,
             data: '0x8b6e6b6f' // getLeaderboard() selector
           }],
           onData: (data) => {
-            refetch() // Update leaderboard on new score
-            // Show notification for new score
-            if (data && data.length > 0) {
-              const latestScore = data[0]
-              setNewScoreNotification(`New score: ${latestScore.score.toString()} by ${latestScore.player.slice(0, 6)}...`)
-              setTimeout(() => setNewScoreNotification(null), 5000)
+            const now = Date.now()
+            const latency = now - lastUpdateTime.current
+            setSdsLatency(latency)
+            lastUpdateTime.current = now
+            
+            // Update leaderboard
+            refetch()
+            setUpdateCount(prev => prev + 1)
+            
+            // Parse event data to show notification
+            try {
+              if (data && Array.isArray(data) && data.length > 0) {
+                const eventData = data[0]
+                const notification: ScoreNotification = {
+                  player: eventData.player || 'Unknown',
+                  score: Number(eventData.score || 0),
+                  tokenId: Number(eventData.tokenId || 0),
+                  id: `${Date.now()}-${Math.random()}`
+                }
+                
+                setNotifications(prev => [...prev, notification].slice(-3)) // Keep last 3
+                
+                // Remove notification after 5 seconds
+                setTimeout(() => {
+                  setNotifications(prev => prev.filter(n => n.id !== notification.id))
+                }, 5000)
+              }
+            } catch (err) {
+              console.error('Error parsing event data:', err)
             }
+            
+            setConnectionStatus('connected')
           },
           onError: (error) => {
             console.error('SDS subscription error:', error)
+            setConnectionStatus('error')
           },
           onlyPushChanges: true
         })
 
+        setConnectionStatus('connected')
         return subscription?.unsubscribe
       } catch (error) {
         console.error('Failed to subscribe to SDS:', error)
-        // Fallback to polling
+        setConnectionStatus('polling')
+        
+        // Fallback to polling every 5 seconds
         const interval = setInterval(() => {
           refetch()
+          setUpdateCount(prev => prev + 1)
         }, 5000)
+        
         return () => clearInterval(interval)
       }
     }
@@ -81,16 +128,45 @@ export default function Leaderboard() {
     }
   }
 
+  const getStatusBadge = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return <Badge variant="default" className="text-xs bg-green-600">● SDS Live</Badge>
+      case 'connecting':
+        return <Badge variant="secondary" className="text-xs">○ Connecting...</Badge>
+      case 'error':
+        return <Badge variant="destructive" className="text-xs">● Error</Badge>
+      case 'polling':
+        return <Badge variant="outline" className="text-xs">● Polling</Badge>
+    }
+  }
+
   return (
     <Card className="w-[500px]">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          Real-Time Leaderboard
-          <Badge variant="secondary" className="text-xs">SDS Powered</Badge>
+        <CardTitle className="flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2">
+            Real-Time Leaderboard
+            {getStatusBadge()}
+          </div>
+          <div className="text-xs text-gray-500">
+            {updateCount} updates
+            {sdsLatency !== null && connectionStatus === 'connected' && (
+              <span className="ml-2">({sdsLatency}ms)</span>
+            )}
+          </div>
         </CardTitle>
-        {newScoreNotification && (
-          <div className="text-sm text-green-600 font-medium animate-pulse">
-            {newScoreNotification}
+        {notifications.length > 0 && (
+          <div className="space-y-1">
+            {notifications.map((notif) => (
+              <div 
+                key={notif.id}
+                className="text-sm text-green-600 font-medium animate-pulse bg-green-50 dark:bg-green-950/20 p-2 rounded"
+              >
+                🎮 New score: <strong>{notif.score}</strong> by {notif.player.slice(0, 6)}...{notif.player.slice(-4)}
+                {notif.tokenId > 0 && <span className="ml-2">| NFT #{notif.tokenId}</span>}
+              </div>
+            ))}
           </div>
         )}
       </CardHeader>

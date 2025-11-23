@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useWriteContract, useAccount, useReadContract, useWaitForTransactionReceipt } from 'wagmi'
 import Game from '../components/Game'
 import Leaderboard from '../components/Leaderboard'
-import SpectatorMode from '../components/SpectatorMode'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
@@ -12,9 +11,18 @@ import { Badge } from '../components/ui/badge'
 import { Moon, Sun } from 'lucide-react'
 import { BattleArenaABI, CONTRACT_ADDRESS } from '../contracts/BattleArenaABI'
 
+interface GameStats {
+  score: number
+  wavesSurvived: number
+  accuracy: number
+  bestCombo: number
+  asteroidsDestroyed: number
+}
+
 export default function Home() {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'gameOver'>('menu')
   const [finalScore, setFinalScore] = useState(0)
+  const [gameStats, setGameStats] = useState<GameStats | null>(null)
   const [localHighScore, setLocalHighScore] = useState(0)
   const [showTutorial, setShowTutorial] = useState(false)
   const [showNFTs, setShowNFTs] = useState(false)
@@ -75,8 +83,9 @@ export default function Home() {
   }
 
   const startGame = () => setGameState('playing')
-  const handleGameOver = (score: number) => {
+  const handleGameOver = (score: number, stats: GameStats) => {
     setFinalScore(score)
+    setGameStats(stats)
     setGameState('gameOver')
   }
 
@@ -112,8 +121,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex items-center justify-center p-4 transition-colors duration-300 pt-20">
-      <div className="flex flex-col lg:flex-row gap-8 max-w-7xl">
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-col lg:flex-row gap-8 max-w-7xl w-full">
+        <div className="flex flex-col gap-4 flex-1">
           <Card className="w-full lg:w-[800px]">
           <CardHeader>
             <CardTitle>Real-Time Blockchain Battle Arena</CardTitle>
@@ -172,10 +181,33 @@ export default function Home() {
               </div>
             )}
             {gameState === 'playing' && <Game onGameOver={handleGameOver} />}
-            {gameState === 'gameOver' && (
+            {gameState === 'gameOver' && gameStats && (
               <div className="text-center">
-                <p className="text-2xl mb-2">Final Score: {finalScore}</p>
-                {finalScore === localHighScore && finalScore > 0 && <p className="text-yellow-400 mb-4">New Local High Score!</p>}
+                <p className="text-3xl font-bold mb-4 text-yellow-400">Final Score: {finalScore.toLocaleString()}</p>
+                {finalScore === localHighScore && finalScore > 0 && (
+                  <p className="text-yellow-400 mb-4 animate-pulse">🏆 New Local High Score! 🏆</p>
+                )}
+                
+                {/* Detailed Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-6 max-w-md mx-auto">
+                  <div className="bg-blue-900/30 p-3 rounded border border-blue-500">
+                    <p className="text-sm text-gray-400">Waves Survived</p>
+                    <p className="text-2xl font-bold text-blue-400">{gameStats.wavesSurvived}</p>
+                  </div>
+                  <div className="bg-green-900/30 p-3 rounded border border-green-500">
+                    <p className="text-sm text-gray-400">Accuracy</p>
+                    <p className="text-2xl font-bold text-green-400">{gameStats.accuracy}%</p>
+                  </div>
+                  <div className="bg-orange-900/30 p-3 rounded border border-orange-500">
+                    <p className="text-sm text-gray-400">Best Combo</p>
+                    <p className="text-2xl font-bold text-orange-400">{gameStats.bestCombo}x 🔥</p>
+                  </div>
+                  <div className="bg-purple-900/30 p-3 rounded border border-purple-500">
+                    <p className="text-sm text-gray-400">Total Kills</p>
+                    <p className="text-2xl font-bold text-purple-400">{gameStats.asteroidsDestroyed}</p>
+                  </div>
+                </div>
+
                 <div className="flex gap-2 justify-center mb-4">
                   <Button onClick={submitScore} disabled={isPending || (txHash && isConfirming)}>
                     {isPending ? 'Submitting...' : (txHash && isConfirming) ? 'Confirming...' : 'Submit Score to Blockchain'}
@@ -196,7 +228,6 @@ export default function Home() {
             )}
           </CardContent>
           </Card>
-          <SpectatorMode />
         </div>
         <Leaderboard />
       </div>
