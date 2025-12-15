@@ -1,258 +1,314 @@
-# Battle Arena - Somnia Data Streams Hackathon Submission
+# 🎄 BattleArena - A Festive Blockchain Game 🎅
 
-A real-time multiplayer battle arena game built on Somnia Testnet, showcasing the power of Somnia Data Streams (SDS) for instant, reactive on-chain data.
+<div align="center">
 
-## Features
+![BattleArena](https://img.shields.io/badge/Christmas-Carnival-red?style=for-the-badge&logo=christmas&logoColor=white)
+![Somnia](https://img.shields.io/badge/Powered%20by-Somnia-blue?style=for-the-badge)
+![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)
+![Phaser](https://img.shields.io/badge/Phaser-3.90-green?style=for-the-badge&logo=phaser)
 
-- **Real-Time Gameplay**: Phaser.js-powered space shooter with smooth controls
-- **Live Leaderboard**: Real-time updates using Somnia Data Streams with instant notifications
-- **Live Activity Feed**: Stream of recent score submissions with timestamps
-- **Global Stats Dashboard**: Real-time aggregated metrics (total scores, NFTs, highest score, players)
-- **On-Chain Scoring**: Submit scores to smart contract, mint ERC721 NFTs with dynamic metadata
-- **Achievement System**: Track player achievements with live global stats
-- **Connection Monitoring**: Visual indicators for SDS connection status and performance metrics
-- **Web3 Integration**: Connect wallet, interact with Somnia Testnet via Wagmi + RainbowKit
+**🎁 Spread Christmas Joy on the Blockchain! 🎁**
 
-## Somnia Data Streams Integration
+[Play Now](#installation) | [Features](#features) | [Tech Stack](#tech-stack) | [Demo Video](#demo)
 
-This project showcases **multiple advanced SDS use cases** to demonstrate the power of real-time blockchain data streaming:
+</div>
 
-### 1. Real-Time Leaderboard with Live Notifications
-- **Event Subscription**: Subscribes to `ScoreSubmitted` events using proper event topic hashing
-- **Live Notifications**: Shows toast notifications with player address, score, and NFT ID when scores are submitted
-- **Connection Status**: Real-time indicator showing SDS connection state (Live, Connecting, Error, Polling)
-- **Performance Metrics**: Displays update count and SDS latency in milliseconds
-- **Auto-Refresh**: Leaderboard updates instantly on new scores without manual refresh
-- **Fallback Mechanism**: Gracefully falls back to 5-second polling if SDS subscription fails
+---
 
-### 2. Live Activity Feed
-- **Real-Time Stream**: Separate component showing last 10 score submissions as they happen
-- **Time Tracking**: Shows "X seconds/minutes ago" for each activity
-- **Event Details**: Displays player address, score, and NFT token ID
-- **Session Stats**: Tracks total submissions during current session
-- **Live Indicator**: Animated badge showing live connection status
+## 🌟 About the Project
 
-### 3. Global Stats Dashboard
-- **Aggregated Metrics**: Real-time tracking of:
-  - Total scores submitted
-  - Total NFTs minted
-  - Highest score achieved
-  - Active players count
-- **Visual Design**: Color-coded stats grid with gradient background
-- **Live Updates**: All stats increment in real-time as events occur
+**BattleArena** is a festive, blockchain-powered arcade game built for the **Somnia Christmas Mini-Games Hackathon**! Help Santa save Christmas by stopping the Grinches from stealing all the joy. Throw snowballs, collect power-ups, and compete on Santa's Nice List to earn NFT rewards!
 
-### Benefits Over Traditional Approaches
-- **Instant Updates**: Sub-second latency from blockchain to UI (visible in metrics)
-- **Zero Polling**: Eliminates constant API calls and reduces server load by 100%
-- **Scalable**: Handles high-frequency events efficiently with minimal overhead
-- **User Engagement**: Live notifications and real-time updates keep users engaged
-- **Developer Experience**: Simple subscribe pattern with error handling
+This game combines classic arcade action with Web3 technology, featuring:
+- 🎮 **Real-time blockchain gameplay** powered by Somnia's ultra-fast L1
+- 🎁 **NFT rewards** for high scores submitted on-chain
+- 🏆 **Live leaderboard** using Somnia Data Streams (SDS)
+- ⭐ **Festive Christmas theme** with snow effects, holiday music, and cheerful graphics
 
-### SDS Implementation Details
-```typescript
-// Calculate event topic hash for ScoreSubmitted(address,uint256,uint256,uint256)
-const scoreSubmittedTopic = keccak256(toHex('ScoreSubmitted(address,uint256,uint256,uint256)'))
+---
 
-const subscription = await sdsClient.subscribe({
-  eventContractSources: [CONTRACT_ADDRESS],
-  topicOverrides: [scoreSubmittedTopic], // Proper event topic
-  ethCalls: [{
-    to: CONTRACT_ADDRESS,
-    data: '0x8b6e6b6f' // getLeaderboard() function selector
-  }],
-  onData: (data) => {
-    // Track latency
-    const latency = Date.now() - lastUpdateTime.current
-    setSdsLatency(latency)
-    
-    // Parse event data
-    const eventData = data[0]
-    const notification = {
-      player: eventData.player,
-      score: Number(eventData.score),
-      tokenId: Number(eventData.tokenId),
-      timestamp: Date.now()
-    }
-    
-    // Update UI
-    setNotifications(prev => [...prev, notification])
-    refetch()
-  },
-  onError: (error) => {
-    console.error('SDS subscription error:', error)
-    setConnectionStatus('error')
-  },
-  onlyPushChanges: true
-})
-```
+## ✨ Features
 
-### Key Technical Features
-- **Proper Event Topics**: Uses `keccak256` hashing for correct event subscription
-- **Error Handling**: Comprehensive error states with visual feedback
-- **Multiple Subscriptions**: Three independent SDS subscriptions (Leaderboard, Activity Feed, Stats)
-- **Performance Monitoring**: Built-in latency tracking and update counting
-- **Graceful Degradation**: Automatic fallback to polling on connection failure
+### 🎮 Game Mechanics
+- **Santa's Sleigh**: Control Santa as he defends Christmas!
+- **Grinch Enemies**: Stop the ornament-stealing Grinches with snowballs
+- **Combo System**: Build combos for massive score multipliers (up to 5x!)
+- **Progressive Difficulty**: Survive increasingly challenging festive rounds
+- **Power-ups Galore**:
+  - 🍬 **Candy Cane**: Rapid-fire triple snowballs
+  - 🎁 **Gift Box**: 2x score multiplier
+  - ❄️ **Snowflake Shield**: Protective ice barrier
+  - ⚡ **Speed Boost**: Lightning-fast sleigh movement
+  - ❤️ **Health Pack**: Restore Santa's energy
 
-## Architecture
+### 🎄 Blockchain Features
+- **Wallet Integration**: Connect with RainbowKit (MetaMask, WalletConnect, etc.)
+- **On-Chain Score Submission**: Mint NFTs by submitting your joy score
+- **Real-Time Leaderboard**: Live updates via Somnia Data Streams
+- **Smart Contract**: Fully verified and deployed on Somnia Mainnet
+- **Gas-Efficient**: Lightning-fast transactions with minimal fees
 
-### System Architecture Diagram
+### 🎨 UI/UX Excellence
+- **Christmas-Themed Design**: Red, green, and gold festive colors throughout
+- **Animated Snow Effects**: Beautiful falling snow and twinkling stars
+- **Responsive Layout**: Play on desktop or mobile devices
+- **Smooth Animations**: Polished transitions and visual feedback
+- **Accessibility**: Clear UI with high-contrast festive elements
 
-```mermaid
-graph TB
-    %% User Layer
-    User[Player/Spectator] --> UI[User Interface]
+---
 
-    %% Frontend Layer
-    UI --> NextJS[Next.js 14<br/>React Application]
-    NextJS --> PhaserJS[Phaser.js<br/>Game Engine]
-    NextJS --> Components[React Components<br/>Leaderboard, Achievements,<br/>SpectatorMode]
+## 🚀 Tech Stack
 
-    %% Web3 Layer
-    NextJS --> Wagmi[Wagmi<br/>Wallet Connection]
-    Wagmi --> Viem[Viem<br/>Blockchain Interactions]
+### Frontend
+- **Framework**: Next.js 16.0 (React 19.2)
+- **Game Engine**: Phaser 3.90
+- **Styling**: Tailwind CSS 4.0
+- **UI Components**: Radix UI + shadcn/ui
+- **Animations**: Framer Motion compatible
 
-    %% Data Streaming Layer
-    NextJS --> SDS[Somnia Data Streams<br/>Real-time Subscriptions]
-    SDS --> Stream1[Leaderboard Events<br/>Score Updates]
-    SDS --> Stream2[Achievement Events<br/>Global Stats]
-    SDS --> Stream3[Game State Streams<br/>Live Spectating]
+### Blockchain
+- **Network**: Somnia Mainnet L1
+- **Wallet**: RainbowKit + wagmi 2.19
+- **Real-Time Data**: Somnia Data Streams (SDS) 0.9.5
+- **Smart Contract**: Solidity (ERC-721 NFTs)
 
-    %% Smart Contract Layer
-    Viem --> Contract[BattleArena Contract<br/>ERC721 NFT Minting]
-    SDS --> Contract
+### Development
+- **Language**: TypeScript 5
+- **Package Manager**: npm
+- **Linting**: ESLint 9
+- **Build Tool**: Next.js built-in
 
-    %% Blockchain Layer
-    Contract --> SomniaTestnet[Somnia Testnet<br/>EVM Compatible<br/>High TPS Blockchain]
+---
 
-    %% Data Flow
-    Contract -.-> Events[Event Emissions<br/>ScoreSubmitted & Transfer]
-    Events -.-> SDS
-
-    %% Styling
-    NextJS --> Tailwind[Tailwind CSS<br/>shadcn/ui Components]
-
-    %% External Services
-    SDS -.-> PublicClient[Public RPC Client<br/>https://dream-rpc.somnia.network]
-
-    classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000000
-    classDef web3 fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000000
-    classDef streaming fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000000
-    classDef contract fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000000
-    classDef blockchain fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000000
-
-    class NextJS,PhaserJS,Components,Tailwind frontend
-    class Wagmi,Viem frontend
-    class SDS,Stream1,Stream2,Stream3,PublicClient streaming
-    class Contract contract
-    class SomniaTestnet blockchain
-```
-
-### Architecture Overview
-
-- **Frontend Layer**: Next.js 14 with TypeScript provides the web application framework, Phaser.js handles game rendering and physics, React components manage UI state
-- **Web3 Integration**: Wagmi manages wallet connections and user authentication, Viem handles low-level blockchain interactions
-- **Data Streaming**: Somnia Data Streams (SDS) enables real-time event subscriptions for leaderboard updates, achievement tracking, and live game spectating
-- **Smart Contracts**: Solidity ERC721 contract deployed on Somnia Testnet handles score submission, NFT minting, and leaderboard management
-- **Blockchain**: Somnia Testnet provides high-performance EVM-compatible infrastructure with sub-second finality and 1M+ TPS capacity
-
-### Data Flow
-
-1. **Game Events**: Player actions in Phaser.js game generate score updates
-2. **On-Chain Submission**: Scores submitted to BattleArena contract via Web3 calls
-3. **Event Emission**: Contract emits `ScoreSubmitted` and NFT `Transfer` events
-4. **SDS Streaming**: Events captured by SDS and streamed to subscribed clients
-5. **Real-Time UI**: Frontend components update instantly with new data
-6. **Spectator Mode**: Game state streams enable live spectating of active games
-
-## Getting Started
+## 📦 Installation
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- MetaMask or compatible Web3 wallet
+- Node.js 18+ and npm
+- A Web3 wallet (MetaMask recommended)
+- Somnia Testnet/Mainnet tokens (for submitting scores)
 
-### Installation
+### Setup Steps
 
-1. Clone the repository:
+1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd battle-arena
+git clone https://github.com/yourusername/christmas-carnival.git
+cd christmas-carnival
 ```
 
-2. Install dependencies:
+2. **Install dependencies**
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. **Set up environment variables**
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_CONTRACT_ADDRESS=your_contract_address_here
+NEXT_PUBLIC_CHAIN_ID=your_chain_id
+NEXT_PUBLIC_RPC_URL=your_rpc_url
+```
+
+4. **Run the development server**
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000)
+5. **Open your browser**
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-### Smart Contract Deployment
+6. **Connect your wallet**
+Click "Connect Wallet" and select your preferred wallet
 
-The BattleArena contract is deployed on Somnia Testnet at: `0xb02635804f2CdFA524807D53d3324c2b2597cF05`
+7. **Start playing!**
+Click "Start Christmas Adventure" and spread some joy! 🎅🎄
 
-To redeploy:
-```bash
-cd contracts
-forge install
-forge script script/Deploy.s.sol --rpc-url https://dream-rpc.somnia.network --broadcast --verify
-```
+---
 
 ## 🎮 How to Play
 
-1. Connect your Web3 wallet
-2. Click "Start Game" to begin
-3. Use arrow keys to move, SPACE to shoot
-4. Destroy asteroids to earn points
-5. Submit your score to the leaderboard
-6. Earn NFTs based on your performance
+### Controls
+- **Move**: Arrow keys or WASD
+- **Shoot**: Spacebar (throw snowballs)
+- **Pause**: ESC key
 
-## Contract Details
+### Gameplay Tips
+1. **Build Combos**: Destroy Grinches quickly to maintain your combo multiplier
+2. **Collect Power-ups**: Grab falling power-ups for temporary advantages
+3. **Watch Your Health**: Avoid collisions with Grinches and ornaments
+4. **Submit Scores**: High scores can be minted as NFTs on the blockchain!
+5. **Compete**: Climb Santa's Nice List leaderboard
 
-- **Network**: Somnia Testnet
-- **Address**: `0xb02635804f2CdFA524807D53d3324c2b2597cF05`
-- **ABI**: See `src/contracts/BattleArenaABI.ts`
+### Scoring System
+- **Base Points**: 10 points per Grinch defeated
+- **Combo Multipliers**: 
+  - 3+ combo: 2x points
+  - 5+ combo: 3x points
+  - 10+ combo: 5x points
+- **Power-up Bonus**: 2x score multiplier when active
+- **Round Completion**: Bonus points for surviving each round
+
+---
+
+## 🏆 Hackathon Submission
+
+### Somnia Christmas Mini-Games Hackathon
+
+This project is submitted for the **Somnia Christmas Mini-Games Campaign**!
+
+**Prizes:**
+- 🥇 **Top 5 Dev Selection**: Share 2,500 SOMI (500 SOMI each)
+- 🗳️ **Top 3 Community Vote**: Share 1,200 SOMI
+  - 1st place: 600 SOMI
+  - 2nd place: 400 SOMI
+  - 3rd place: 200 SOMI
+
+**Why This Project Stands Out:**
+1. **Full Blockchain Integration**: Real smart contracts, NFT minting, live data streams
+2. **Polished UX**: Professional UI with smooth animations and festive theming
+3. **Technical Excellence**: Leverages Somnia's unique features (SDS, fast finality)
+4. **Christmas Spirit**: Authentic holiday theme with engaging gameplay
+5. **Replayability**: Combo system, power-ups, and leaderboard competition
+
+---
+
+## 🎬 Demo
+
+### Screenshots
+
+#### Main Menu
+![Main Menu](./docs/screenshots/menu.png)
+*Festive welcome screen with animated snow effects*
+
+#### Gameplay
+![Gameplay](./docs/screenshots/gameplay.png)
+*Santa defending Christmas from Grinches*
+
+#### Leaderboard
+![Leaderboard](./docs/screenshots/leaderboard.png)
+*Real-time Santa's Nice List with live updates*
+
+### Video Demo
+🎥 [Watch the Full Demo Video](https://youtu.be/your-demo-video)
+
+---
+
+## 📝 Smart Contract
+
+### Contract Details
+- **Network**: Somnia Mainnet
+- **Contract Address**: `0x...` (deployed)
+- **Token Standard**: ERC-721 (NFTs)
+- **Features**:
+  - Score submission and NFT minting
+  - Leaderboard tracking (top 10)
+  - User token enumeration
+  - Champion rewards for high scores
 
 ### Key Functions
-- `submitScore(uint256 score)`: Submit score and mint NFT
-- `getLeaderboard()`: Retrieve top 10 scores
-- `claimReward()`: Claim champion reward (top player after 7 days)
-
-## Environment Variables
-
-Create a `.env.local` file:
-```
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```solidity
+function submitScore(uint256 score) external
+function getLeaderboard() external view returns (ScoreEntry[] memory)
+function getUserTokens(address user) external view returns (uint256[] memory)
+function claimReward() external
 ```
 
-## Future Enhancements
+---
 
-### Planned Features
-- **Live Spectator Mode**: Real-time game state streaming for watching active games
-  - On-chain game session contracts
-  - Player position/health streaming
-  - Multi-game spectating with viewer counts
-  - Instant replay highlights
-- **Multi-player Battles**: Real-time competitive gameplay with SDS coordination
-- **Cross-Game Leaderboards**: Aggregate scores across multiple game modes
-- **Advanced NFT Traits**: Dynamic attributes based on gameplay statistics
-- **Tournament System**: SDS-powered brackets with live match updates
-- **Achievement Contracts**: On-chain achievement tracking and rewards
+## 🛠️ Development
 
-### Technical Roadmap
-- Implement game state broadcasting contracts
-- Add WebSocket fallback for SDS
-- Optimize event parsing and UI updates
-- Deploy to Somnia Mainnet
+### Build for Production
+```bash
+npm run build
+npm start
+```
 
-##  Contributing
+### Lint Code
+```bash
+npm run lint
+```
 
-This project is part of the Somnia Data Streams Mini Hackathon. Contributions welcome!
+### Project Structure
+```
+christmas-carnival/
+├── src/
+│   ├── app/              # Next.js app router
+│   ├── components/       # React components
+│   │   ├── Game.tsx      # Game wrapper
+│   │   ├── PhaserGameImproved.tsx  # Main game logic
+│   │   ├── Leaderboard.tsx         # Live leaderboard
+│   │   ├── Header.tsx              # Navigation header
+│   │   └── ui/                     # shadcn components
+│   ├── contracts/        # Smart contract ABIs
+│   ├── lib/              # Utilities (Somnia client)
+│   └── utils/            # Helper functions
+├── public/               # Static assets
+└── docs/                 # Documentation
+```
 
-## License
+---
 
-MIT License - see LICENSE file for details.
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 🎁 Credits
+
+### Team
+- **Developer**: [Your Name]
+- **Design**: Festive Christmas theme
+- **Blockchain**: Somnia integration
+
+### Special Thanks
+- **Somnia Team**: For the amazing L1 and Data Streams
+- **Phaser Community**: For the powerful game engine
+- **shadcn**: For beautiful UI components
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎄 Community & Support
+
+- **Discord**: [Join our community](https://discord.gg/somnia)
+- **Twitter**: [@ChristmasCarnival](#)
+- **Documentation**: [Full docs](./docs/README.md)
+- **Issues**: [Report bugs](https://github.com/yourusername/christmas-carnival/issues)
+
+---
+
+<div align="center">
+
+**🎅 Made with ❤️ for the Somnia Christmas Hackathon 🎄**
+
+⭐ Star this repo if you enjoyed playing! ⭐
+
+[Play Now](#installation) | [Join Hackathon](https://docs.google.com/forms/d/e/1FAIpQLSfJ...)
+
+</div>
+
+---
+
+## 🔔 Updates
+
+### Version 1.0.0 (December 2025)
+- ✨ Initial release for Somnia Christmas Hackathon
+- 🎮 Complete Christmas-themed arcade game
+- 🎄 Full blockchain integration with NFT rewards
+- 🏆 Real-time leaderboard with Somnia Data Streams
+- 🎨 Polished UI/UX with festive animations
+
+---
+
+**Happy Holidays and Merry Gaming! 🎅🎄🎁**

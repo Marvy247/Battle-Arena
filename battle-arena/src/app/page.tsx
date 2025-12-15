@@ -80,7 +80,7 @@ export default function Home() {
         <Card className="w-full max-w-md backdrop-blur-sm bg-white/10 border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
           <CardHeader>
             <CardTitle className="text-center text-3xl font-bold bg-gradient-to-r from-red-400 via-yellow-300 to-green-400 bg-clip-text text-transparent">
-              🎅 Welcome to Christmas Carnival! 🎄
+              🎅 Welcome to BattleArena! 🎄
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center">
@@ -153,27 +153,27 @@ export default function Home() {
         ))}
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-8 max-w-7xl w-full z-10">
-        <div className="flex flex-col gap-4 flex-1">
-          <Card className="w-full lg:w-[800px] backdrop-blur-sm bg-white/10 border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
-          <CardHeader className="bg-gradient-to-r from-red-600 to-green-600 rounded-t-lg">
-            <CardTitle className="text-center text-3xl font-bold text-yellow-300">
-              🎄 Christmas Carnival - Festive Fun on Somnia! 🎅
+      <div className="flex flex-col lg:flex-row gap-4 md:gap-8 max-w-7xl w-full z-10 px-2 md:px-4">
+        <div className="flex flex-col gap-4 flex-1 w-full">
+          <Card className="w-full backdrop-blur-sm bg-white/10 border-2 md:border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
+          <CardHeader className="bg-gradient-to-r from-red-600 to-green-600 rounded-t-lg p-3 md:p-6">
+            <CardTitle className="text-center text-xl md:text-3xl font-bold text-yellow-300">
+              🎄 BattleArena 🎅
             </CardTitle>
           </CardHeader>
-          <CardContent className="bg-gradient-to-br from-red-900/50 to-green-900/50">
+          <CardContent className="bg-gradient-to-br from-red-900/50 to-green-900/50 p-3 md:p-6">
             {gameState === 'menu' && (
               <div className="text-center">
-                <p className="mb-4 text-xl">🎅 Help Santa catch gifts and spread Christmas joy! 🎁</p>
-                <p className="mb-4 text-lg font-bold text-yellow-300">🎯 Best Joy Score: {localHighScore} ⭐</p>
-                <div className="flex gap-2 justify-center mb-4">
+                <p className="mb-3 md:mb-4 text-base md:text-xl">🎅 Help Santa spread Christmas joy! 🎁</p>
+                <p className="mb-3 md:mb-4 text-base md:text-lg font-bold text-yellow-300">🎯 Best Joy: {localHighScore} ⭐</p>
+                <div className="flex flex-wrap gap-2 justify-center mb-4">
                   <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
                     <DialogTrigger asChild>
-                      <Button variant="outline">How to Play</Button>
+                      <Button variant="outline" className="text-sm md:text-base">How to Play</Button>
                     </DialogTrigger>
                     <DialogContent className="bg-gradient-to-br from-red-900 to-green-900 text-white border-4 border-yellow-400">
                       <DialogHeader>
-                        <DialogTitle className="text-2xl text-yellow-300">🎄 How to Play Christmas Carnival 🎅</DialogTitle>
+                        <DialogTitle className="text-2xl text-yellow-300">🎄 How to Play BattleArena 🎅</DialogTitle>
                       </DialogHeader>
                       <div className="text-sm space-y-2">
                         <p>🎮 <strong>Move:</strong> WASD or Arrow keys to guide Santa's sleigh</p>
@@ -213,8 +213,8 @@ export default function Home() {
                     </Dialog>
                   )}
                 </div>
-                <Button onClick={startGame} className="bg-gradient-to-r from-red-600 to-green-600 hover:from-red-700 hover:to-green-700 text-white font-bold text-xl py-6 px-8 border-4 border-yellow-400 shadow-lg shadow-yellow-400/50">
-                  🎅 Start Christmas Adventure! 🎄
+                <Button onClick={startGame} className="bg-gradient-to-r from-red-600 to-green-600 hover:from-red-700 hover:to-green-700 text-white font-bold text-base md:text-xl py-4 md:py-6 px-6 md:px-8 border-2 md:border-4 border-yellow-400 shadow-lg shadow-yellow-400/50 w-full md:w-auto">
+                  🎅 Start Adventure! 🎄
                 </Button>
               </div>
             )}

@@ -17,10 +17,10 @@ interface GameStats {
 
 export default function PhaserGameImproved({ onGameOver }: GameProps) {
   const gameRef = useRef<HTMLDivElement>(null)
-  const [game, setGame] = useState<Phaser.Game | null>(null)
+  const gameInstanceRef = useRef<Phaser.Game | null>(null)
 
   useEffect(() => {
-    if (!gameRef.current) return
+    if (!gameRef.current || gameInstanceRef.current) return
 
     class GameScene extends Phaser.Scene {
       // Core game objects
@@ -85,7 +85,7 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       private asteroidSpawnTimer?: Phaser.Time.TimerEvent
 
       preload() {
-        // Create Santa sleigh SVG
+        // Create Santa sleigh SVG (without emojis for btoa compatibility)
         const createSantaSVG = () => {
           const svg = `
             <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
@@ -100,8 +100,8 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
               <rect x="22" y="18" width="6" height="4" fill="#FFFFFF"/>
               
               <!-- Stars decoration -->
-              <text x="15" y="32" font-size="8" fill="#FFD700">⭐</text>
-              <text x="30" y="32" font-size="8" fill="#FFD700">⭐</text>
+              <polygon points="15,28 16,30 18,30 16.5,31.5 17,33 15,31.5 13,33 13.5,31.5 12,30 14,30" fill="#FFD700"/>
+              <polygon points="30,28 31,30 33,30 31.5,31.5 32,33 30,31.5 28,33 28.5,31.5 27,30 29,30" fill="#FFD700"/>
             </svg>
           `
           return 'data:image/svg+xml;base64,' + btoa(svg)
@@ -147,10 +147,12 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         // Create animated starfield
         this.createStarfield()
 
-        // Create player
-        this.player = this.physics.add.sprite(400, 500, 'player')
+        // Create player (centered based on game width)
+        const centerX = this.cameras.main.width / 2
+        const playerY = this.cameras.main.height - 100
+        this.player = this.physics.add.sprite(centerX, playerY, 'player')
         this.player.setCollideWorldBounds(true)
-        this.player.setScale(1)
+        this.player.setScale(0.8)
         this.player.setDepth(10)
 
         // Create groups
@@ -161,17 +163,38 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         // Create HUD
         this.createHUD()
 
-        // Setup controls
-        this.cursors = this.input.keyboard!.createCursorKeys()
-        this.wasdKeys = this.input.keyboard!.addKeys({
-          W: Phaser.Input.Keyboard.KeyCodes.W,
-          A: Phaser.Input.Keyboard.KeyCodes.A,
-          S: Phaser.Input.Keyboard.KeyCodes.S,
-          D: Phaser.Input.Keyboard.KeyCodes.D
-        }) as any
-        this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-        this.escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
-        this.escKey.on('down', this.togglePause, this)
+        // Setup keyboard controls
+        if (this.input.keyboard) {
+          this.cursors = this.input.keyboard.createCursorKeys()
+          this.wasdKeys = this.input.keyboard.addKeys({
+            W: Phaser.Input.Keyboard.KeyCodes.W,
+            A: Phaser.Input.Keyboard.KeyCodes.A,
+            S: Phaser.Input.Keyboard.KeyCodes.S,
+            D: Phaser.Input.Keyboard.KeyCodes.D
+          }) as any
+          this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+          this.escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+          this.escKey.on('down', this.togglePause, this)
+        }
+
+        // Setup touch controls for mobile
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (!this.isPaused && !this.showTutorial) {
+            // Auto-fire on touch
+            const time = this.time.now
+            if (time > this.lastFired) {
+              this.shootBullet()
+              this.lastFired = time + 150
+            }
+          }
+        })
+
+        this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+          if (pointer.isDown && !this.isPaused && !this.showTutorial) {
+            // Move player to pointer X position
+            this.player.x = Phaser.Math.Clamp(pointer.x, 25, this.cameras.main.width - 25)
+          }
+        })
 
         // Setup collisions
         this.physics.add.overlap(this.player, this.asteroids, this.hitAsteroid, undefined, this)
@@ -230,40 +253,45 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
 
       createHUD() {
+        // Responsive font size based on game width
+        const fontSize = this.cameras.main.width < 500 ? '18px' : '26px'
+        const comboFontSize = this.cameras.main.width < 500 ? '24px' : '36px'
+        
         // Score
-        this.scoreText = this.add.text(20, 20, '🎄 JOY: 0', {
-          fontSize: '26px',
+        this.scoreText = this.add.text(10, 10, '🎄 JOY: 0', {
+          fontSize: fontSize,
           color: '#FFD700',
           fontFamily: 'Arial Black',
           stroke: '#DC143C',
-          strokeThickness: 4
+          strokeThickness: 3
         }).setDepth(100)
 
         // Wave
-        this.waveText = this.add.text(800 - 20, 20, '🎅 ROUND 1', {
-          fontSize: '26px',
+        this.waveText = this.add.text(this.cameras.main.width - 10, 10, '🎅 ROUND 1', {
+          fontSize: fontSize,
           color: '#FFD700',
           fontFamily: 'Arial Black',
           stroke: '#228B22',
-          strokeThickness: 4
+          strokeThickness: 3
         }).setOrigin(1, 0).setDepth(100)
 
         // Combo
-        this.comboText = this.add.text(400, 50, '', {
-          fontSize: '36px',
+        this.comboText = this.add.text(this.cameras.main.width / 2, 50, '', {
+          fontSize: comboFontSize,
           color: '#FFFF00',
           fontFamily: 'Arial Black',
           stroke: '#DC143C',
-          strokeThickness: 5
+          strokeThickness: 4
         }).setOrigin(0.5).setDepth(100).setVisible(false)
 
         // Power-up status
-        this.powerUpText = this.add.text(400, 560, '', {
-          fontSize: '18px',
+        const powerUpFontSize = this.cameras.main.width < 500 ? '12px' : '18px'
+        this.powerUpText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height - 40, '', {
+          fontSize: powerUpFontSize,
           color: '#FFFF00',
           fontFamily: 'Arial Black',
           backgroundColor: '#DC143C',
-          padding: { x: 12, y: 6 }
+          padding: { x: 8, y: 4 }
         }).setOrigin(0.5).setDepth(100)
 
         // Health and Shield bars
@@ -356,30 +384,32 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       update(time: number) {
         if (this.isPaused) return
 
-        // Player movement with WASD or Arrow keys
+        // Player movement with WASD or Arrow keys (if available)
         const moveSpeed = this.speedBoost ? 450 : 300
         
-        if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
-          this.player.setVelocityX(-moveSpeed)
-        } else if (this.cursors.right.isDown || this.wasdKeys.D.isDown) {
-          this.player.setVelocityX(moveSpeed)
-        } else {
-          this.player.setVelocityX(0)
-        }
+        if (this.cursors && this.wasdKeys) {
+          if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
+            this.player.setVelocityX(-moveSpeed)
+          } else if (this.cursors.right.isDown || this.wasdKeys.D.isDown) {
+            this.player.setVelocityX(moveSpeed)
+          } else {
+            this.player.setVelocityX(0)
+          }
 
-        if (this.cursors.up.isDown || this.wasdKeys.W.isDown) {
-          this.player.setVelocityY(-moveSpeed)
-        } else if (this.cursors.down.isDown || this.wasdKeys.S.isDown) {
-          this.player.setVelocityY(moveSpeed)
-        } else {
-          this.player.setVelocityY(0)
-        }
+          if (this.cursors.up.isDown || this.wasdKeys.W.isDown) {
+            this.player.setVelocityY(-moveSpeed)
+          } else if (this.cursors.down.isDown || this.wasdKeys.S.isDown) {
+            this.player.setVelocityY(moveSpeed)
+          } else {
+            this.player.setVelocityY(0)
+          }
 
-        // Shooting
-        const fireRate = this.rapidFire ? 80 : 150
-        if (this.spaceKey.isDown && time > this.lastFired) {
-          this.shootBullet()
-          this.lastFired = time + fireRate
+          // Shooting with spacebar
+          const fireRate = this.rapidFire ? 80 : 150
+          if (this.spaceKey && this.spaceKey.isDown && time > this.lastFired) {
+            this.shootBullet()
+            this.lastFired = time + fireRate
+          }
         }
 
         // Player rotation
@@ -442,7 +472,8 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
 
       spawnAsteroid() {
-        const x = Phaser.Math.Between(50, 750)
+        const maxX = this.cameras.main.width - 50
+        const x = Phaser.Math.Between(50, maxX)
         const asteroid = this.asteroids.create(x, -50, 'asteroid')
         
         // Speed increases with waves
@@ -774,7 +805,7 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       createTutorial() {
         const overlay = this.add.rectangle(400, 300, 800, 600, 0x1a472a, 0.9).setDepth(300)
         
-        const title = this.add.text(400, 130, '🎄 CHRISTMAS CARNIVAL 🎅', {
+        const title = this.add.text(400, 130, '🎄 BattleArena 🎅', {
           fontSize: '52px',
           color: '#FFD700',
           fontFamily: 'Arial Black',
@@ -821,10 +852,21 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
 
         this.tutorialContainer = this.add.container(0, 0, [overlay, title, instructionText, startButton])
 
-        this.input.once('pointerdown', () => {
-          this.tutorialContainer.destroy()
-          this.showTutorial = false
-        })
+        // Close tutorial on any interaction (click, touch, or keyboard)
+        const closeTutorial = () => {
+          if (this.tutorialContainer && this.showTutorial) {
+            this.tutorialContainer.destroy()
+            this.showTutorial = false
+          }
+        }
+
+        // Listen for pointer/touch
+        this.input.once('pointerdown', closeTutorial)
+
+        // Listen for any keyboard press
+        if (this.input.keyboard) {
+          this.input.keyboard.once('keydown', closeTutorial)
+        }
       }
 
       togglePause() {
@@ -999,10 +1041,20 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
     }
 
+    // Calculate responsive dimensions
+    const getGameDimensions = () => {
+      const isMobile = window.innerWidth < 768
+      const width = isMobile ? Math.min(window.innerWidth - 32, 400) : 800
+      const height = isMobile ? Math.min(window.innerHeight * 0.6, 500) : 600
+      return { width, height }
+    }
+
+    const { width, height } = getGameDimensions()
+
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: width,
+      height: height,
       parent: gameRef.current,
       scene: GameScene,
       physics: {
@@ -1012,27 +1064,37 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
           debug: false
         }
       },
-      backgroundColor: '#0d3320'  // Dark Christmas green
+      backgroundColor: '#0d3320',  // Dark Christmas green
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      }
     }
 
     const newGame = new Phaser.Game(config)
-    setGame(newGame)
+    gameInstanceRef.current = newGame
 
     return () => {
-      newGame.destroy(true)
+      if (gameInstanceRef.current) {
+        gameInstanceRef.current.destroy(true)
+        gameInstanceRef.current = null
+      }
     }
   }, [onGameOver])
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       <div 
         ref={gameRef} 
-        className="border-4 border-blue-500 rounded-lg shadow-2xl shadow-blue-500/50"
+        className="border-4 border-yellow-400 rounded-lg shadow-2xl shadow-yellow-400/50 w-full max-w-[800px]"
       />
       
-      <div className="mt-4 text-white text-center max-w-2xl">
-        <p className="text-sm text-gray-400">
+      <div className="mt-4 text-white text-center max-w-2xl px-4">
+        <p className="text-sm md:text-base text-yellow-300 font-bold">
           🎮 Build combos to multiply your score! Collect power-ups to gain advantages!
+        </p>
+        <p className="text-xs md:text-sm text-gray-300 mt-2">
+          💡 Mobile: Touch left/right to move, tap center to shoot!
         </p>
       </div>
     </div>

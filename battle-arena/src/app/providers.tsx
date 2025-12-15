@@ -4,12 +4,12 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { somniaTestnet } from '../lib/somnia'
+import { somniaMainnet } from '../lib/somnia'
 
 const config = getDefaultConfig({
-  appName: 'Battle Arena',
+  appName: 'Christmas Carnival',
   projectId: 'demo', // Replace with actual project ID
-  chains: [somniaTestnet],
+  chains: [somniaMainnet],
   ssr: true,
 })
 

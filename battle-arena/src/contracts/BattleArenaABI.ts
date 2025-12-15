@@ -101,4 +101,5 @@ export const BattleArenaABI = [
   }
 ] as const;
 
-export const CONTRACT_ADDRESS = "0xF966AFD6482c80bD33907617dE8F30Ffbd8c24c2";
+// ✅ Deployed on Somnia Mainnet - Christmas Carnival Game
+export const CONTRACT_ADDRESS = "0x6805D21E2cB99e4DfEd8D79fa04CfeE09c8DBC08";

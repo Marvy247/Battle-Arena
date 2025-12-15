@@ -142,9 +142,9 @@ export default function Leaderboard() {
   }
 
   return (
-    <Card className="w-[500px] backdrop-blur-sm bg-white/10 border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
-      <CardHeader className="bg-gradient-to-r from-red-700 to-green-700 rounded-t-lg">
-        <CardTitle className="flex items-center gap-2 justify-between text-yellow-300">
+    <Card className="w-full lg:w-[500px] backdrop-blur-sm bg-white/10 border-2 md:border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
+      <CardHeader className="bg-gradient-to-r from-red-700 to-green-700 rounded-t-lg p-3 md:p-6">
+        <CardTitle className="flex flex-col md:flex-row items-center gap-2 justify-between text-yellow-300 text-base md:text-xl">
           <div className="flex items-center gap-2">
             🎅 Santa's Nice List 🎄
             {getStatusBadge()}
