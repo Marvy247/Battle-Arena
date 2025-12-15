@@ -85,51 +85,60 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       private asteroidSpawnTimer?: Phaser.Time.TimerEvent
 
       preload() {
-        // Create player SVG
-        const createPlayerSVG = () => {
+        // Create Santa sleigh SVG
+        const createSantaSVG = () => {
+          const svg = `
+            <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sleigh body -->
+              <ellipse cx="25" cy="35" rx="18" ry="10" fill="#8B4513" stroke="#654321" stroke-width="2"/>
+              <rect x="10" y="25" width="30" height="12" rx="3" fill="#654321"/>
+              
+              <!-- Santa -->
+              <circle cx="25" cy="20" r="8" fill="#FFE4C4"/>
+              <circle cx="25" cy="13" r="7" fill="#DC143C"/>
+              <circle cx="25" cy="10" r="2" fill="#FFFFFF"/>
+              <rect x="22" y="18" width="6" height="4" fill="#FFFFFF"/>
+              
+              <!-- Stars decoration -->
+              <text x="15" y="32" font-size="8" fill="#FFD700">⭐</text>
+              <text x="30" y="32" font-size="8" fill="#FFD700">⭐</text>
+            </svg>
+          `
+          return 'data:image/svg+xml;base64,' + btoa(svg)
+        }
+
+        const createGrinchSVG = () => {
           const svg = `
             <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="shipGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#4FC3F7;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#0288D1;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              <polygon points="20,5 30,20 26,35 14,35 10,20" fill="url(#shipGrad)" stroke="#29B6F6" stroke-width="2"/>
-              <circle cx="20" cy="15" r="4" fill="#FFEB3B"/>
-              <polygon points="10,20 5,25 5,30 10,28" fill="#FF5252"/>
-              <polygon points="30,20 35,25 35,30 30,28" fill="#FF5252"/>
+              <!-- Grinch/ornament -->
+              <circle cx="20" cy="20" r="18" fill="#DC143C" stroke="#8B0000" stroke-width="2"/>
+              <circle cx="20" cy="15" r="8" fill="#228B22"/>
+              <rect x="18" y="5" width="4" height="8" fill="#FFD700"/>
+              <circle cx="20" cy="5" r="2" fill="#FFD700"/>
+              
+              <!-- Grinch face -->
+              <circle cx="15" cy="20" r="2" fill="#000000"/>
+              <circle cx="25" cy="20" r="2" fill="#000000"/>
+              <path d="M 15 25 Q 20 28 25 25" stroke="#000000" stroke-width="2" fill="none"/>
             </svg>
           `
           return 'data:image/svg+xml;base64,' + btoa(svg)
         }
 
-        const createAsteroidSVG = () => {
+        const createSnowballSVG = () => {
           const svg = `
-            <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="18" fill="#78909C" stroke="#546E7A" stroke-width="2"/>
-              <circle cx="13" cy="15" r="3" fill="#455A64"/>
-              <circle cx="25" cy="10" r="2" fill="#455A64"/>
-              <circle cx="28" cy="25" r="2.5" fill="#455A64"/>
-              <circle cx="15" cy="28" r="1.5" fill="#455A64"/>
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="7" fill="#FFFFFF" stroke="#B0E0E6" stroke-width="2"/>
+              <circle cx="6" cy="6" r="2" fill="#E0F6FF" opacity="0.6"/>
+              <circle cx="10" cy="9" r="1.5" fill="#E0F6FF" opacity="0.5"/>
             </svg>
           `
           return 'data:image/svg+xml;base64,' + btoa(svg)
         }
 
-        const createBulletSVG = () => {
-          const svg = `
-            <svg width="12" height="20" viewBox="0 0 12 20" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="0" width="4" height="16" fill="#FF5252" rx="2"/>
-              <ellipse cx="6" cy="18" rx="3" ry="2" fill="#FF1744"/>
-            </svg>
-          `
-          return 'data:image/svg+xml;base64,' + btoa(svg)
-        }
-
-        this.load.image('player', createPlayerSVG())
-        this.load.image('asteroid', createAsteroidSVG())
-        this.load.image('bullet', createBulletSVG())
+        this.load.image('player', createSantaSVG())
+        this.load.image('asteroid', createGrinchSVG())
+        this.load.image('bullet', createSnowballSVG())
       }
 
       create() {
@@ -179,20 +188,41 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
 
       createStarfield() {
-        // Create animated star background
-        for (let i = 0; i < 100; i++) {
+        // Create Christmas snow and stars background
+        for (let i = 0; i < 80; i++) {
           const x = Phaser.Math.Between(0, 800)
           const y = Phaser.Math.Between(0, 600)
-          const size = Phaser.Math.FloatBetween(0.5, 2.5)
-          const alpha = Phaser.Math.FloatBetween(0.3, 1)
+          const size = Phaser.Math.FloatBetween(1, 3)
+          const alpha = Phaser.Math.FloatBetween(0.4, 1)
           
-          const star = this.add.circle(x, y, size, 0xFFFFFF, alpha)
+          // Mix of snowflakes and stars
+          const isSnow = i % 3 === 0
+          const color = isSnow ? 0xFFFFFF : 0xFFD700
+          const star = this.add.circle(x, y, size, color, alpha)
           
-          // Twinkling effect
+          // Twinkling and falling effect
           this.tweens.add({
             targets: star,
             alpha: { from: alpha, to: alpha * 0.3 },
-            duration: Phaser.Math.Between(1000, 3000),
+            y: y + Phaser.Math.Between(50, 200),
+            duration: Phaser.Math.Between(2000, 5000),
+            yoyo: true,
+            repeat: -1
+          })
+        }
+        
+        // Add some festive decorations
+        for (let i = 0; i < 10; i++) {
+          const x = Phaser.Math.Between(50, 750)
+          const y = Phaser.Math.Between(50, 150)
+          const decorSize = Phaser.Math.FloatBetween(3, 5)
+          const decorColor = [0xFF0000, 0x00FF00, 0xFFD700][i % 3]
+          const decor = this.add.circle(x, y, decorSize, decorColor, 0.6)
+          
+          this.tweens.add({
+            targets: decor,
+            scale: { from: 1, to: 1.3 },
+            duration: Phaser.Math.Between(1000, 2000),
             yoyo: true,
             repeat: -1
           })
@@ -201,39 +231,39 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
 
       createHUD() {
         // Score
-        this.scoreText = this.add.text(20, 20, 'SCORE: 0', {
-          fontSize: '24px',
-          color: '#FFFFFF',
+        this.scoreText = this.add.text(20, 20, '🎄 JOY: 0', {
+          fontSize: '26px',
+          color: '#FFD700',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
+          stroke: '#DC143C',
           strokeThickness: 4
         }).setDepth(100)
 
         // Wave
-        this.waveText = this.add.text(800 - 20, 20, 'WAVE 1', {
-          fontSize: '24px',
+        this.waveText = this.add.text(800 - 20, 20, '🎅 ROUND 1', {
+          fontSize: '26px',
           color: '#FFD700',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
+          stroke: '#228B22',
           strokeThickness: 4
         }).setOrigin(1, 0).setDepth(100)
 
         // Combo
         this.comboText = this.add.text(400, 50, '', {
-          fontSize: '32px',
-          color: '#FF5252',
+          fontSize: '36px',
+          color: '#FFFF00',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
+          stroke: '#DC143C',
           strokeThickness: 5
         }).setOrigin(0.5).setDepth(100).setVisible(false)
 
         // Power-up status
         this.powerUpText = this.add.text(400, 560, '', {
-          fontSize: '16px',
-          color: '#00FF00',
-          fontFamily: 'Arial',
-          backgroundColor: '#000000',
-          padding: { x: 10, y: 5 }
+          fontSize: '18px',
+          color: '#FFFF00',
+          fontFamily: 'Arial Black',
+          backgroundColor: '#DC143C',
+          padding: { x: 12, y: 6 }
         }).setOrigin(0.5).setDepth(100)
 
         // Health and Shield bars
@@ -256,40 +286,40 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         this.healthBar.fillStyle(0x000000, 0.5)
         this.healthBar.fillRect(x, y, barWidth, barHeight)
 
-        // Health bar fill (color changes based on health)
-        let healthColor = 0x00FF00
-        if (this.health < 30) healthColor = 0xFF0000
-        else if (this.health < 60) healthColor = 0xFFAA00
+        // Health bar fill (Christmas colors based on health)
+        let healthColor = 0x00FF00  // Green for good health
+        if (this.health < 30) healthColor = 0xFF0000  // Red for danger
+        else if (this.health < 60) healthColor = 0xFFD700  // Gold for medium
 
         this.healthBar.fillStyle(healthColor, 1)
         this.healthBar.fillRect(x, y, (this.health / this.maxHealth) * barWidth, barHeight)
 
-        // Health bar border
-        this.healthBar.lineStyle(2, 0xFFFFFF)
+        // Health bar border - festive gold
+        this.healthBar.lineStyle(3, 0xFFD700)
         this.healthBar.strokeRect(x, y, barWidth, barHeight)
 
         // Health text
         this.healthBar.fillStyle(0xFFFFFF)
 
-        // Shield bar (if active)
+        // Shield bar (if active) - icy blue
         if (this.shield > 0) {
-          this.shieldBar.fillStyle(0x00AAFF, 0.7)
+          this.shieldBar.fillStyle(0xADD8E6, 0.8)
           this.shieldBar.fillRect(x, y + barHeight + 5, (this.shield / this.maxShield) * barWidth, 10)
-          this.shieldBar.lineStyle(1, 0x00CCFF)
+          this.shieldBar.lineStyle(2, 0xFFFFFF)
           this.shieldBar.strokeRect(x, y + barHeight + 5, barWidth, 10)
         }
       }
 
       startWave() {
         this.asteroidsDestroyedInWave = 0
-        this.asteroidsInWave = 10 + (this.wave - 1) * 5 // Increase asteroids per wave
+        this.asteroidsInWave = 10 + (this.wave - 1) * 5 // Increase Grinches per round
 
         // Show wave notification
-        const waveNotif = this.add.text(400, 300, `WAVE ${this.wave}`, {
+        const waveNotif = this.add.text(400, 300, `🎄 ROUND ${this.wave} 🎅`, {
           fontSize: '64px',
           color: '#FFD700',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
+          stroke: '#DC143C',
           strokeThickness: 8
         }).setOrigin(0.5).setDepth(200).setAlpha(0)
 
@@ -311,7 +341,7 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         })
 
         // Update wave text
-        this.waveText.setText(`WAVE ${this.wave}`)
+        this.waveText.setText(`🎅 ROUND ${this.wave}`)
 
         // Start spawning asteroids
         const spawnDelay = Math.max(400, 800 - (this.wave * 30)) // Faster spawning in higher waves
@@ -705,7 +735,7 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
 
       addScore(points: number) {
         this.score += points
-        this.scoreText.setText(`SCORE: ${this.score.toLocaleString()}`)
+        this.scoreText.setText(`🎄 JOY: ${this.score.toLocaleString()}`)
       }
 
       showFloatingText(x: number, y: number, text: string, color: string = '#FFFFFF', size: number = 24) {
@@ -742,40 +772,42 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
 
       createTutorial() {
-        const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.8).setDepth(300)
+        const overlay = this.add.rectangle(400, 300, 800, 600, 0x1a472a, 0.9).setDepth(300)
         
-        const title = this.add.text(400, 150, 'HOW TO PLAY', {
-          fontSize: '48px',
+        const title = this.add.text(400, 130, '🎄 CHRISTMAS CARNIVAL 🎅', {
+          fontSize: '52px',
           color: '#FFD700',
-          fontFamily: 'Arial Black'
+          fontFamily: 'Arial Black',
+          stroke: '#DC143C',
+          strokeThickness: 6
         }).setOrigin(0.5).setDepth(301)
 
         const instructions = [
-          '← → or A D - Move Left/Right',
+          '← → or A D - Move Santa Left/Right',
           '↑ ↓ or W S - Move Up/Down',
-          'SPACE - Shoot',
+          'SPACE - Throw Snowballs',
           'ESC - Pause',
           '',
-          '🎯 Destroy asteroids for points',
-          '🔥 Build combos for multipliers',
-          '💎 Collect power-ups',
-          '🌊 Survive waves for bonuses'
+          '🎁 Stop the Grinches from stealing Christmas!',
+          '⭐ Build combos for bonus joy points',
+          '🍬 Collect festive power-ups',
+          '🎄 Survive rounds to spread more joy!'
         ]
 
-        const instructionText = this.add.text(400, 280, instructions.join('\n'), {
+        const instructionText = this.add.text(400, 290, instructions.join('\n'), {
           fontSize: '20px',
           color: '#FFFFFF',
           fontFamily: 'Arial',
           align: 'center',
-          lineSpacing: 8
+          lineSpacing: 10
         }).setOrigin(0.5).setDepth(301)
 
-        const startButton = this.add.text(400, 480, 'CLICK TO START', {
-          fontSize: '32px',
-          color: '#00FF00',
+        const startButton = this.add.text(400, 500, '🎅 START THE FUN! 🎄', {
+          fontSize: '36px',
+          color: '#FFFF00',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
-          strokeThickness: 4
+          stroke: '#DC143C',
+          strokeThickness: 5
         }).setOrigin(0.5).setDepth(301)
 
         // Pulsing animation
@@ -810,56 +842,56 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
       }
 
       showPauseMenu() {
-        const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.8)
-        const pauseText = this.add.text(400, 200, 'PAUSED', {
-          fontSize: '64px',
-          color: '#FFFFFF',
+        const overlay = this.add.rectangle(400, 300, 800, 600, 0x1a472a, 0.9)
+        const pauseText = this.add.text(400, 180, '⏸️ PAUSED 🎄', {
+          fontSize: '68px',
+          color: '#FFD700',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
-          strokeThickness: 6
+          stroke: '#DC143C',
+          strokeThickness: 7
         }).setOrigin(0.5)
 
         const stats = [
-          `Score: ${this.score}`,
-          `Wave: ${this.wave}`,
-          `Combo: ${this.combo}x`,
-          `Best Combo: ${this.bestCombo}x`,
-          `Accuracy: ${this.shotsFired > 0 ? Math.round((this.shotsHit / this.shotsFired) * 100) : 0}%`
+          `🎄 Christmas Joy: ${this.score}`,
+          `🎅 Round: ${this.wave}`,
+          `⭐ Combo: ${this.combo}x`,
+          `🔥 Best Combo: ${this.bestCombo}x`,
+          `🎯 Accuracy: ${this.shotsFired > 0 ? Math.round((this.shotsHit / this.shotsFired) * 100) : 0}%`
         ]
 
-        const statsText = this.add.text(400, 290, stats.join('\n'), {
-          fontSize: '20px',
-          color: '#AAAAAA',
+        const statsText = this.add.text(400, 300, stats.join('\n'), {
+          fontSize: '22px',
+          color: '#FFFFFF',
           fontFamily: 'Arial',
           align: 'center',
-          lineSpacing: 5
+          lineSpacing: 8
         }).setOrigin(0.5)
 
-        const resumeButton = this.add.text(400, 420, 'Resume (ESC)', {
-          fontSize: '28px',
-          color: '#00FF00',
+        const resumeButton = this.add.text(400, 430, '▶️ Resume (ESC)', {
+          fontSize: '30px',
+          color: '#FFFF00',
           fontFamily: 'Arial Black',
-          backgroundColor: '#222222',
-          padding: { x: 20, y: 10 }
+          backgroundColor: '#DC143C',
+          padding: { x: 24, y: 12 }
         }).setOrigin(0.5).setInteractive()
 
         resumeButton.on('pointerdown', () => this.togglePause())
-        resumeButton.on('pointerover', () => resumeButton.setColor('#FFFF00'))
-        resumeButton.on('pointerout', () => resumeButton.setColor('#00FF00'))
+        resumeButton.on('pointerover', () => resumeButton.setColor('#00FF00'))
+        resumeButton.on('pointerout', () => resumeButton.setColor('#FFFF00'))
 
-        const exitButton = this.add.text(400, 490, 'Exit to Menu', {
+        const exitButton = this.add.text(400, 510, '🚪 Exit to Menu', {
           fontSize: '24px',
-          color: '#FF5252',
-          fontFamily: 'Arial',
-          backgroundColor: '#222222',
+          color: '#FFFFFF',
+          fontFamily: 'Arial Black',
+          backgroundColor: '#8B0000',
           padding: { x: 20, y: 10 }
         }).setOrigin(0.5).setInteractive()
 
         exitButton.on('pointerdown', () => {
           this.gameOver()
         })
-        exitButton.on('pointerover', () => exitButton.setColor('#FFAA00'))
-        exitButton.on('pointerout', () => exitButton.setColor('#FF5252'))
+        exitButton.on('pointerover', () => exitButton.setColor('#FFD700'))
+        exitButton.on('pointerout', () => exitButton.setColor('#FFFFFF'))
 
         this.pauseMenu = this.add.container(0, 0, [overlay, pauseText, statsText, resumeButton, exitButton])
         this.pauseMenu.setDepth(400)
@@ -890,13 +922,13 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         }
 
         // Create game over screen
-        const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.9).setDepth(500)
+        const overlay = this.add.rectangle(400, 300, 800, 600, 0x1a472a, 0.95).setDepth(500)
         
-        const gameOverText = this.add.text(400, 120, 'GAME OVER', {
-          fontSize: '72px',
-          color: '#FF5252',
+        const gameOverText = this.add.text(400, 100, '🎄 CHRISTMAS COMPLETE! 🎅', {
+          fontSize: '60px',
+          color: '#FFD700',
           fontFamily: 'Arial Black',
-          stroke: '#000000',
+          stroke: '#DC143C',
           strokeThickness: 8
         }).setOrigin(0.5).setDepth(501)
 
@@ -911,11 +943,11 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
 
         // Display stats
         const statsLines = [
-          `Final Score: ${this.score.toLocaleString()}`,
-          `Waves Survived: ${stats.wavesSurvived}`,
-          `Accuracy: ${accuracy}%`,
-          `Best Combo: ${this.bestCombo}x 🔥`,
-          `Asteroids Destroyed: ${this.totalAsteroidsDestroyed}`
+          `🎄 Total Christmas Joy: ${this.score.toLocaleString()}`,
+          `🎅 Rounds Survived: ${stats.wavesSurvived}`,
+          `🎯 Accuracy: ${accuracy}%`,
+          `⭐ Best Combo: ${this.bestCombo}x 🔥`,
+          `🎁 Grinches Stopped: ${this.totalAsteroidsDestroyed}`
         ]
 
         const statsText = this.add.text(400, 280, statsLines.join('\n'), {
@@ -923,9 +955,9 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
           color: '#FFFFFF',
           fontFamily: 'Arial',
           align: 'center',
-          lineSpacing: 10,
-          stroke: '#000000',
-          strokeThickness: 3
+          lineSpacing: 12,
+          stroke: '#DC143C',
+          strokeThickness: 4
         }).setOrigin(0.5).setDepth(501).setAlpha(0)
 
         this.tweens.add({
@@ -936,11 +968,11 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         })
 
         // Exit button
-        const exitButton = this.add.text(400, 480, 'CONTINUE', {
+        const exitButton = this.add.text(400, 500, '🎁 CONTINUE TO REWARDS', {
           fontSize: '32px',
-          color: '#00FF00',
+          color: '#FFFF00',
           fontFamily: 'Arial Black',
-          backgroundColor: '#222222',
+          backgroundColor: '#DC143C',
           padding: { x: 30, y: 15 }
         }).setOrigin(0.5).setDepth(501).setInteractive().setAlpha(0)
 
@@ -962,8 +994,8 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
         exitButton.on('pointerdown', () => {
           onGameOver(this.score, stats)
         })
-        exitButton.on('pointerover', () => exitButton.setColor('#FFFF00'))
-        exitButton.on('pointerout', () => exitButton.setColor('#00FF00'))
+        exitButton.on('pointerover', () => exitButton.setColor('#00FF00'))
+        exitButton.on('pointerout', () => exitButton.setColor('#FFFF00'))
       }
     }
 
@@ -980,7 +1012,7 @@ export default function PhaserGameImproved({ onGameOver }: GameProps) {
           debug: false
         }
       },
-      backgroundColor: '#0a0a2e'
+      backgroundColor: '#0d3320'  // Dark Christmas green
     }
 
     const newGame = new Phaser.Game(config)

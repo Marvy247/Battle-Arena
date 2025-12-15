@@ -121,10 +121,10 @@ export default function Leaderboard() {
 
   const getRankBadge = (index: number) => {
     switch (index) {
-      case 0: return <Badge variant="destructive">🥇 1st</Badge>
-      case 1: return <Badge variant="secondary">🥈 2nd</Badge>
-      case 2: return <Badge variant="outline">🥉 3rd</Badge>
-      default: return <Badge variant="outline">{index + 1}th</Badge>
+      case 0: return <Badge variant="destructive" className="bg-yellow-400 text-red-900 font-bold text-lg">🎅 1st</Badge>
+      case 1: return <Badge variant="secondary" className="bg-gray-300 text-green-900 font-bold">🎄 2nd</Badge>
+      case 2: return <Badge variant="outline" className="bg-orange-600 text-white font-bold">⭐ 3rd</Badge>
+      default: return <Badge variant="outline" className="bg-red-900/50 text-yellow-300 border-yellow-400">{index + 1}th</Badge>
     }
   }
 
@@ -142,14 +142,14 @@ export default function Leaderboard() {
   }
 
   return (
-    <Card className="w-[500px]">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 justify-between">
+    <Card className="w-[500px] backdrop-blur-sm bg-white/10 border-4 border-yellow-400 shadow-2xl shadow-yellow-400/50">
+      <CardHeader className="bg-gradient-to-r from-red-700 to-green-700 rounded-t-lg">
+        <CardTitle className="flex items-center gap-2 justify-between text-yellow-300">
           <div className="flex items-center gap-2">
-            Real-Time Leaderboard
+            🎅 Santa's Nice List 🎄
             {getStatusBadge()}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-yellow-200">
             {updateCount} updates
             {sdsLatency !== null && connectionStatus === 'connected' && (
               <span className="ml-2">({sdsLatency}ms)</span>
@@ -161,16 +161,16 @@ export default function Leaderboard() {
             {notifications.map((notif) => (
               <div 
                 key={notif.id}
-                className="text-sm text-green-600 font-medium animate-pulse bg-green-50 dark:bg-green-950/20 p-2 rounded"
+                className="text-sm text-yellow-300 font-bold animate-pulse bg-red-900/50 p-2 rounded border-2 border-yellow-400"
               >
-                🎮 New score: <strong>{notif.score}</strong> by {notif.player.slice(0, 6)}...{notif.player.slice(-4)}
-                {notif.tokenId > 0 && <span className="ml-2">| NFT #{notif.tokenId}</span>}
+                🎁 New joy score: <strong>{notif.score}</strong> by {notif.player.slice(0, 6)}...{notif.player.slice(-4)}
+                {notif.tokenId > 0 && <span className="ml-2">🎄 NFT #{notif.tokenId}</span>}
               </div>
             ))}
           </div>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="bg-gradient-to-br from-red-900/50 to-green-900/50">
         <Table>
           <TableHeader>
             <TableRow>
@@ -182,13 +182,13 @@ export default function Leaderboard() {
           </TableHeader>
           <TableBody>
             {leaderboard.slice(0, 10).map((entry, index) => (
-              <TableRow key={index} className={index < 3 ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}>
+              <TableRow key={index} className={index < 3 ? 'bg-yellow-400/20 border-b-2 border-yellow-400' : 'bg-red-900/20'}>
                 <TableCell>{getRankBadge(index)}</TableCell>
-                <TableCell className="font-mono text-sm">
+                <TableCell className="font-mono text-sm text-yellow-300 font-bold">
                   {entry.player.slice(0, 6)}...{entry.player.slice(-4)}
                 </TableCell>
-                <TableCell className="font-bold">{entry.score.toString()}</TableCell>
-                <TableCell className="text-sm text-gray-500">
+                <TableCell className="font-bold text-yellow-300 text-lg">{entry.score.toString()} 🎄</TableCell>
+                <TableCell className="text-sm text-gray-300">
                   {new Date(Number(entry.timestamp) * 1000).toLocaleTimeString()}
                 </TableCell>
               </TableRow>
@@ -196,8 +196,8 @@ export default function Leaderboard() {
           </TableBody>
         </Table>
         {leaderboard.length === 0 && (
-          <div className="text-center text-gray-500 mt-4">
-            No scores yet. Be the first to play!
+          <div className="text-center text-yellow-300 mt-4 text-lg">
+            🎅 No scores yet. Be the first to spread Christmas joy! 🎄
           </div>
         )}
       </CardContent>
